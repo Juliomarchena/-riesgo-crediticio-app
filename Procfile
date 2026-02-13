@@ -1,1 +1,1 @@
-web: gunicorn app:app
+web: npx serve -s build -l $PORT
