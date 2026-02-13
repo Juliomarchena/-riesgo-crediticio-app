@@ -4,7 +4,7 @@ import { styles } from "../styles/theme";
 export default function PurposeSelector({ value, onChange }) {
   return (
     <div>
-      <span style={styles.sectionLabel}>\ud83d\udccc Prop\u00f3sito del Pr\u00e9stamo</span>
+      <span style={styles.sectionLabel}>📌 Propósito del Préstamo</span>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(155px, 1fr))", gap: "8px" }}>
         {purposeOptions.map((opt) => {
           const isActive = value === opt.value;

@@ -25,7 +25,7 @@ export default function InputField({ label, name, value, onChange, type = "text"
       >
         <span style={{ fontSize: "14px" }}>{icon}</span>
         {label}
-        {tooltip && <span style={{ fontSize: "12px", marginLeft: "4px", opacity: 0.7 }}>\u2139\ufe0f</span>}
+        {tooltip && <span style={{ fontSize: "12px", marginLeft: "4px", opacity: 0.7 }}>ℹ️</span>}
       </label>
       {showTooltip && tooltip && (
         <div style={{
@@ -46,7 +46,7 @@ export default function InputField({ label, name, value, onChange, type = "text"
           pointerEvents: "none",
         }}>
           <div style={{ fontSize: "10px", fontWeight: 700, color: "#e2b93b", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
-            \ud83d\udccc {label}
+            📌 {label}
           </div>
           {tooltip}
           <div style={{

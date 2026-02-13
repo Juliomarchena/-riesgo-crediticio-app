@@ -5,9 +5,9 @@ export default function ResultPanel({ result, onReset }) {
   if (!result) return null;
 
   const riskConfig = {
-    Bajo: { color: "#34d399", icon: "\u2705", bg: "rgba(52,211,153,0.08)" },
-    Medio: { color: "#fbbf24", icon: "\u26a0\ufe0f", bg: "rgba(251,191,36,0.08)" },
-    Alto: { color: "#f87171", icon: "\ud83d\udea8", bg: "rgba(248,113,113,0.08)" },
+    Bajo: { color: "#34d399", icon: "✅", bg: "rgba(52,211,153,0.08)" },
+    Medio: { color: "#fbbf24", icon: "⚠️", bg: "rgba(251,191,36,0.08)" },
+    Alto: { color: "#f87171", icon: "🚨", bg: "rgba(248,113,113,0.08)" },
   };
 
   const cfg = riskConfig[result.nivel_riesgo] || riskConfig.Medio;
@@ -93,7 +93,7 @@ export default function ResultPanel({ result, onReset }) {
             { label: "FICO", value: result.datos_recibidos.fico },
             { label: "Tasa", value: `${(result.datos_recibidos.int_rate * 100).toFixed(2)}%` },
             { label: "DTI", value: result.datos_recibidos.dti },
-            { label: "Prop\u00f3sito", value: result.datos_recibidos.purpose.replace(/_/g, " ") },
+            { label: "Propósito", value: result.datos_recibidos.purpose.replace(/_/g, " ") },
           ].map((item) => (
             <div key={item.label} style={{
               padding: "10px 14px",
@@ -128,7 +128,7 @@ export default function ResultPanel({ result, onReset }) {
           transition: "all 0.3s",
         }}
       >
-        \u2190 Nueva Evaluaci\u00f3n
+        ← Nueva Evaluación
       </button>
     </div>
   );
