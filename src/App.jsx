@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import InputField from "./components/InputField";
 import PurposeSelector from "./components/PurposeSelector";
 import ResultPanel from "./components/ResultPanel";
+import BatchProcessor from "./components/BatchProcessor";
 import { styles } from "./styles/theme";
 import { defaultFormData } from "./constants/purposes";
 import { checkApiHealth as fetchApiHealth, predictRisk, API_URL } from "./services/api";
@@ -260,6 +261,8 @@ function App() {
                 La API no está disponible. Verifica que el servicio esté activo en Railway.
               </p>
             )}
+
+            <BatchProcessor />
           </div>
         )}
 

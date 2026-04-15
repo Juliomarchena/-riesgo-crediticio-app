@@ -1,7 +1,19 @@
+import { useState } from "react";
 import GaugeChart from "./GaugeChart";
 import { styles } from "../styles/theme";
+import { generateWordReport } from "../services/generateWordReport";
 
 export default function ResultPanel({ result, onReset }) {
+  const [generatingWord, setGeneratingWord] = useState(false);
+
+  const handleDownloadWord = async () => {
+    setGeneratingWord(true);
+    try {
+      await generateWordReport(result);
+    } finally {
+      setGeneratingWord(false);
+    }
+  };
   if (!result) return null;
 
   const riskConfig = {
@@ -112,24 +124,45 @@ export default function ResultPanel({ result, onReset }) {
         </div>
       </div>
 
-      <button
-        onClick={onReset}
-        style={{
-          width: "100%",
-          padding: "14px",
-          background: "rgba(255,255,255,0.05)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: "12px",
-          color: "rgba(255,255,255,0.7)",
-          fontSize: "14px",
-          fontWeight: 600,
-          cursor: "pointer",
-          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-          transition: "all 0.3s",
-        }}
-      >
-        ← Nueva Evaluación
-      </button>
+      <div style={{ display: "flex", gap: "10px", flexDirection: "column" }}>
+        <button
+          onClick={handleDownloadWord}
+          disabled={generatingWord}
+          style={{
+            width: "100%",
+            padding: "14px",
+            background: generatingWord ? "rgba(37,99,235,0.3)" : "rgba(37,99,235,0.15)",
+            border: "1px solid rgba(96,165,250,0.3)",
+            borderRadius: "12px",
+            color: "#93c5fd",
+            fontSize: "14px",
+            fontWeight: 600,
+            cursor: generatingWord ? "wait" : "pointer",
+            fontFamily: "'Segoe UI', sans-serif",
+            transition: "all 0.2s",
+          }}
+        >
+          {generatingWord ? "⏳ Generando informe..." : "📄 Descargar Informe Word"}
+        </button>
+        <button
+          onClick={onReset}
+          style={{
+            width: "100%",
+            padding: "14px",
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: "12px",
+            color: "rgba(255,255,255,0.7)",
+            fontSize: "14px",
+            fontWeight: 600,
+            cursor: "pointer",
+            fontFamily: "'Segoe UI', sans-serif",
+            transition: "all 0.3s",
+          }}
+        >
+          ← Nueva Evaluación
+        </button>
+      </div>
     </div>
   );
 }
