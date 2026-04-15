@@ -124,7 +124,7 @@ function App() {
         </div>
 
         {result ? (
-          <ResultPanel result={result} onReset={() => setResult(null)} />
+          <ResultPanel result={result} formData={formData} onReset={() => setResult(null)} />
         ) : (
           <div>
             {/* Botones de acción rápida */}

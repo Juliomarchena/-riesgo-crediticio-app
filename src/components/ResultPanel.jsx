@@ -3,13 +3,13 @@ import GaugeChart from "./GaugeChart";
 import { styles } from "../styles/theme";
 import { generateWordReport } from "../services/generateWordReport";
 
-export default function ResultPanel({ result, onReset }) {
+export default function ResultPanel({ result, formData, onReset }) {
   const [generatingWord, setGeneratingWord] = useState(false);
 
   const handleDownloadWord = async () => {
     setGeneratingWord(true);
     try {
-      await generateWordReport(result);
+      await generateWordReport(result, formData);
     } finally {
       setGeneratingWord(false);
     }
