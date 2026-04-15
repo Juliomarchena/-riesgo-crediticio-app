@@ -3,6 +3,16 @@ import GaugeChart from "./GaugeChart";
 import { styles } from "../styles/theme";
 import { generateWordReport } from "../services/generateWordReport";
 
+const purposeLabels = {
+  debt_consolidation: "Consolidación de Deuda",
+  credit_card: "Tarjeta de Crédito",
+  home_improvement: "Mejora del Hogar",
+  major_purchase: "Compra Mayor",
+  small_business: "Pequeño Negocio",
+  educational: "Educativo",
+  all_other: "Otro",
+};
+
 export default function ResultPanel({ result, formData, onReset }) {
   const [generatingWord, setGeneratingWord] = useState(false);
 
@@ -98,30 +108,38 @@ export default function ResultPanel({ result, formData, onReset }) {
           letterSpacing: "1.5px",
           marginBottom: "12px",
         }}>
-          Datos Procesados
+          Datos del Cliente Evaluados
         </h4>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px" }}>
-          {[
-            { label: "FICO", value: result.datos_recibidos.fico },
-            { label: "Tasa", value: `${(result.datos_recibidos.int_rate * 100).toFixed(2)}%` },
-            { label: "DTI", value: result.datos_recibidos.dti },
-            { label: "Propósito", value: result.datos_recibidos.purpose.replace(/_/g, " ") },
-          ].map((item) => (
-            <div key={item.label} style={{
-              padding: "10px 14px",
-              background: "rgba(255,255,255,0.02)",
-              borderRadius: "8px",
-              border: "1px solid rgba(255,255,255,0.05)",
-            }}>
-              <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "1px" }}>
-                {item.label}
-              </div>
-              <div style={{ fontSize: "15px", color: "white", fontWeight: 600, marginTop: "2px", textTransform: "capitalize" }}>
-                {item.value}
-              </div>
-            </div>
-          ))}
-        </div>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+          <thead>
+            <tr>
+              <th style={{ textAlign: "left", padding: "8px 12px", background: "rgba(96,165,250,0.12)", color: "rgba(255,255,255,0.5)", fontWeight: 600, fontSize: "11px", textTransform: "uppercase", letterSpacing: "1px", borderRadius: "6px 0 0 6px" }}>Variable</th>
+              <th style={{ textAlign: "left", padding: "8px 12px", background: "rgba(96,165,250,0.12)", color: "rgba(255,255,255,0.5)", fontWeight: 600, fontSize: "11px", textTransform: "uppercase", letterSpacing: "1px", borderRadius: "0 6px 6px 0" }}>Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { label: "Política Crediticia", value: (formData?.credit_policy ?? result.datos_recibidos?.credit_policy) == 1 ? "Cumple Criterios" : "No Cumple" },
+              { label: "Propósito del Préstamo", value: purposeLabels[result.datos_recibidos?.purpose] || result.datos_recibidos?.purpose || "-" },
+              { label: "Tasa de Interés Anual", value: result.datos_recibidos?.int_rate ? `${(result.datos_recibidos.int_rate * 100).toFixed(2)}%` : "-" },
+              { label: "Cuota Mensual", value: formData?.installment ? `$${Number(formData.installment).toFixed(2)}` : "-" },
+              { label: "Ingreso Anual Aprox.", value: formData?.log_annual_inc ? `$${Math.round(Math.exp(formData.log_annual_inc)).toLocaleString("es-PE")}` : "-" },
+              { label: "Puntaje FICO", value: result.datos_recibidos?.fico ?? "-" },
+              { label: "Ratio Deuda/Ingreso (DTI)", value: result.datos_recibidos?.dti ?? "-" },
+              { label: "Días con Línea de Crédito", value: formData?.days_with_cr_line ?? "-" },
+              { label: "Balance Revolving", value: formData?.revol_bal ? `$${Number(formData.revol_bal).toLocaleString("es-PE")}` : "-" },
+              { label: "Utilización Revolving", value: formData?.revol_util != null ? `${formData.revol_util}%` : "-" },
+              { label: "Consultas últimos 6 meses", value: formData?.inq_last_6mths ?? "-" },
+              { label: "Morosidades (2 años)", value: formData?.delinq_2yrs ?? "-" },
+              { label: "Registros Públicos Neg.", value: formData?.pub_rec ?? "-" },
+            ].map((item, i) => (
+              <tr key={item.label} style={{ background: i % 2 === 0 ? "rgba(255,255,255,0.02)" : "transparent" }}>
+                <td style={{ padding: "8px 12px", color: "rgba(255,255,255,0.55)", fontWeight: 500, borderBottom: "1px solid rgba(255,255,255,0.04)" }}>{item.label}</td>
+                <td style={{ padding: "8px 12px", color: "white", fontWeight: 600, borderBottom: "1px solid rgba(255,255,255,0.04)" }}>{String(item.value)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <div style={{ display: "flex", gap: "10px", flexDirection: "column" }}>
