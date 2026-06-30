@@ -1,3 +1,18 @@
+// ============================================================
+//  Credit Risk AI — App.jsx
+//  Control de Cambios
+//  ------------------------------------------------------------
+//  v2.1 · 30/06/2026
+//   - NUEVO: botón "🧹 Limpiar Datos" (vacía el formulario).
+//   - NUEVO: al volver con "Nueva Evaluación", el formulario
+//            también se limpia (ya no conserva los datos previos).
+//   - NUEVO: emptyFormData (campos vacíos) + función clearForm().
+//   - CAMBIO: la app inicia VACÍA (los datos de prueba son opcionales).
+//   - NUEVO: validación de campos obligatorios. El botón "Evaluar"
+//            se deshabilita y avisa si faltan campos por llenar.
+//  v2.0 · versión previa (sin cambios en lo demás).
+// ============================================================
+
 import { useState, useEffect } from "react";
 import InputField from "./components/InputField";
 import PurposeSelector from "./components/PurposeSelector";
@@ -7,13 +22,62 @@ import { styles } from "./styles/theme";
 import { defaultFormData } from "./constants/purposes";
 import { checkApiHealth as fetchApiHealth, predictRisk, API_URL } from "./services/api";
 
+// ============================================================
+//  NUEVO (v2.1): formulario VACÍO.
+//  Se construye a partir de las mismas claves de defaultFormData,
+//  pero dejando los campos numéricos en blanco ("").
+//  - "purpose" y "credit_policy" se mantienen con un valor válido
+//    para que los selectores no se rompan.
+//  Ventaja: si mañana agregas más campos a defaultFormData,
+//  este objeto se adapta solo (no hay que mantener una lista aparte).
+// ============================================================
+const emptyFormData = Object.keys(defaultFormData).reduce((acc, key) => {
+  if (key === "purpose") {
+    acc[key] = defaultFormData.purpose; // mantiene un propósito válido
+  } else if (key === "credit_policy") {
+    acc[key] = 1; // mantiene "Cumple Criterios" por defecto
+  } else {
+    acc[key] = ""; // los demás campos quedan vacíos
+  }
+  return acc;
+}, {});
+
+// ============================================================
+//  NUEVO (v2.1): campos numéricos obligatorios para poder evaluar.
+//  (purpose y credit_policy NO se listan porque son selectores
+//   y siempre tienen un valor.)
+//  Un campo cuenta como "lleno" si su valor NO es cadena vacía "".
+//  Ojo: el 0 SÍ es válido (ej.: morosidades = 0), por eso solo
+//  consideramos vacío al "".
+// ============================================================
+const requiredFields = [
+  "fico", "int_rate", "installment", "log_annual_inc", "dti",
+  "days_with_cr_line", "revol_bal", "revol_util",
+  "inq_last_6mths", "delinq_2yrs", "pub_rec",
+];
+
 function App() {
-  const [formData, setFormData] = useState({ ...defaultFormData });
+  // CAMBIO (v2.1): la app ahora INICIA VACÍA (emptyFormData).
+  // Antes iniciaba con defaultFormData, por eso aparecían los
+  // datos de prueba al entrar. Ahora esos datos son opcionales
+  // (botón "🧪 Cargar Datos de Prueba").
+  const [formData, setFormData] = useState({ ...emptyFormData });
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [apiStatus, setApiStatus] = useState("checking");
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  // ============================================================
+  //  NUEVO (v2.1): validación en vivo.
+  //  Cada vez que cambia formData, recalculamos qué campos faltan.
+  //  - missingFields: lista de campos vacíos.
+  //  - isFormComplete: true solo si no falta ninguno.
+  // ============================================================
+  const missingFields = requiredFields.filter(
+    (f) => formData[f] === "" || formData[f] === null || formData[f] === undefined
+  );
+  const isFormComplete = missingFields.length === 0;
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -35,6 +99,12 @@ function App() {
   };
 
   const handleSubmit = async () => {
+    // NUEVO (v2.1): si faltan campos, no enviamos a la API.
+    if (!isFormComplete) {
+      setError("Completa todos los campos antes de evaluar.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setResult(null);
@@ -51,6 +121,19 @@ function App() {
 
   const loadTestData = () => {
     setFormData({ ...defaultFormData });
+  };
+
+  // ============================================================
+  //  NUEVO (v2.1): limpia el formulario.
+  //  - Vacía todos los campos (emptyFormData).
+  //  - Borra el resultado anterior y cualquier mensaje de error.
+  //  Se usa tanto en el botón "Limpiar Datos" como al volver
+  //  con "Nueva Evaluación".
+  // ============================================================
+  const clearForm = () => {
+    setFormData({ ...emptyFormData });
+    setResult(null);
+    setError(null);
   };
 
   return (
@@ -124,7 +207,13 @@ function App() {
         </div>
 
         {result ? (
-          <ResultPanel result={result} formData={formData} onReset={() => setResult(null)} />
+          // ============================================================
+          //  CAMBIO (v2.1): antes onReset solo hacía setResult(null),
+          //  por eso el formulario conservaba los datos al volver.
+          //  Ahora llama a clearForm(), así "Nueva Evaluación" regresa
+          //  con el formulario LIMPIO.
+          // ============================================================
+          <ResultPanel result={result} formData={formData} onReset={clearForm} />
         ) : (
           <div>
             {/* Botones de acción rápida */}
@@ -146,6 +235,29 @@ function App() {
               >
                 🧪 Cargar Datos de Prueba
               </button>
+
+              {/* ============================================================
+                  NUEVO (v2.1): botón "Limpiar Datos".
+                  Vacía todos los campos del formulario al instante.
+                 ============================================================ */}
+              <button
+                onClick={clearForm}
+                style={{
+                  padding: "8px 18px",
+                  background: "rgba(248,113,113,0.06)",
+                  border: "1px solid rgba(248,113,113,0.15)",
+                  borderRadius: "8px",
+                  color: "rgba(252,165,165,0.7)",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                  fontFamily: "'Segoe UI', sans-serif",
+                  fontWeight: 500,
+                  transition: "all 0.2s",
+                }}
+              >
+                🧹 Limpiar Datos
+              </button>
+
               <button
                 onClick={checkApiHealth}
                 style={{
@@ -245,16 +357,27 @@ function App() {
             )}
 
             {/* Botón evaluar */}
+            {/* CAMBIO (v2.1): también se deshabilita si el formulario
+                está incompleto (!isFormComplete). */}
             <button
               onClick={handleSubmit}
-              disabled={loading || apiStatus === "offline"}
+              disabled={loading || apiStatus === "offline" || !isFormComplete}
               style={{
                 ...(loading ? styles.submitButtonLoading : styles.submitButton),
-                opacity: apiStatus === "offline" ? 0.4 : 1,
+                opacity: (apiStatus === "offline" || !isFormComplete) ? 0.4 : 1,
+                cursor: (loading || apiStatus === "offline" || !isFormComplete) ? "not-allowed" : "pointer",
               }}
             >
               {loading ? "⏳ Analizando..." : "🔮 Evaluar Riesgo Crediticio"}
             </button>
+
+            {/* NUEVO (v2.1): aviso de campos faltantes.
+                Solo se muestra si la API está bien pero falta llenar datos. */}
+            {!isFormComplete && apiStatus !== "offline" && (
+              <p style={{ textAlign: "center", color: "rgba(251,191,36,0.8)", fontSize: "12px", marginTop: "10px" }}>
+                ⚠️ Falta(n) {missingFields.length} campo(s) por completar para poder evaluar.
+              </p>
+            )}
 
             {apiStatus === "offline" && (
               <p style={{ textAlign: "center", color: "rgba(248,113,113,0.7)", fontSize: "12px", marginTop: "10px" }}>
@@ -269,7 +392,7 @@ function App() {
         {/* Footer */}
         <div style={styles.footer}>
           <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)" }}>
-            Credit Risk AI v2.0 · Modelo ML con 19 características · Desarrollado por Julius
+            Credit Risk AI v2.1 · Modelo ML con 19 características · Desarrollado por Julius
           </p>
           <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.1)", marginTop: "4px" }}>
             API: {API_URL}
